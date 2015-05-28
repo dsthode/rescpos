@@ -90,5 +90,13 @@ module Rescpos
     def ascii(value)
       value.to_s.unpack('U')[0].to_s(16)
     end
+
+		def full_cut
+			"\n\n\n\n\x1d\x561\x0c"
+		end
+
+		def partial_cut
+			"\n\n\n\n\x1b\x69\x0c"
+		end
   end
 end
