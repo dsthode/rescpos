@@ -102,15 +102,15 @@ module Rescpos
     end
 
 		def full_cut
-			"\x1d\x56\x66\x0c"
+			"\n\x1d\x56\x65\x07"
 		end
 
 		def partial_cut
-			"\x1d\x56\x65\x0c"
+			"\n\x1d\x56\x66\x07"
 		end
 
 		def barcode(code, options)
-			"\x1d\x6b#{options[:type]}#{code.size}#{code}"
+			"\n\x1d\x6b#{options[:type]}#{("0x"+code.size.to_s).hex}#{code}"
 		end
   end
 end
