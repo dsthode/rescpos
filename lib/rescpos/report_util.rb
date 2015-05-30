@@ -110,7 +110,7 @@ module Rescpos
 		end
 
 		def barcode(code, options)
-			"\n\x1d\x6b#{options[:type]}#{("0x"+code.size.to_s).hex}#{code}"
+			"\n\x1d\x6b#{options[:type]}#{code.size.chr}#{code}"
 		end
   end
 end
