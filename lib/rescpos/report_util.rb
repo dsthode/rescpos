@@ -6,6 +6,16 @@ module Rescpos
     ALIGN_L = "\x00"
     ALIGN_R = "\x02"
 
+		UPCA = "\x65"
+		UPCE = "\x66"
+		EAN13 = "\x67"
+		EAN8 = "\x68"
+		CODE39 = "\x69"
+		ITF = "\x70"
+		CODABAR = "\x71"
+		CODE93 = "\x72"
+		CODE128 = "\x73"
+
     def single_splitline
       text("-" * 42, :font_size => FONT_NORMAL)
     end
@@ -92,11 +102,15 @@ module Rescpos
     end
 
 		def full_cut
-			"\n\n\n\n\x1d\x561\x0c"
+			"\x0a\x0a\x0a\x1d\x561\x0c"
 		end
 
 		def partial_cut
-			"\n\n\n\n\x1b\x69\x0c"
+			"\x0a\x0a\x0a\x1b\x69\x0c"
+		end
+
+		def barcode(code, options)
+			"\x1d\x6b#{options[:type]}#{code.size}#{code}"
 		end
   end
 end
