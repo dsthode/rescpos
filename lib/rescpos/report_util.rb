@@ -1,6 +1,3 @@
-require 'rubygems'
-require 'rmagick'
-
 module Rescpos
   module ReportUtil
     FONT_NORMAL = "\x00"

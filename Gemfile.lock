@@ -1,7 +1,8 @@
 PATH
   remote: .
   specs:
-    rescpos (0.0.8)
+    rescpos (0.0.9)
+      rmagick
 
 GEM
   remote: http://rubygems.org/
@@ -31,6 +32,7 @@ GEM
     libnotify (0.5.7)
     rb-inotify (0.8.6)
       ffi (>= 0.5.0)
+    rmagick (2.15.1)
     rspec (2.6.0)
       rspec-core (~> 2.6.0)
       rspec-expectations (~> 2.6.0)
