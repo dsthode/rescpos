@@ -1,3 +1,4 @@
+require 'rmagick'
 require "erb"
 require "socket"
 
