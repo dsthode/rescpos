@@ -103,4 +103,8 @@ describe ReportUtilTest do
     end
     table.should == "\x1b\x44#{9.chr}\x00a\x09b\x09\na\x092\x09"
   end
+
+	it "should return something with the image" do
+		@report_util.image('/home/dsthode/Downloads/logo_barbarela_ticket.png').size.should > 0
+	end
 end

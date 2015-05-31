@@ -133,7 +133,8 @@ module Rescpos
 				bitmap_w = ((image_w + 7) >> 3) << 3
 				bitmap_size = image_h * (bitmap_w >> 3)
 				bitmap = Array.new(bitmap_size)
-				for i in 0..image_bytes.size
+				for i in 0..(image_bytes.size-1)
+					bitmap[i] = 0
 					if image_bytes[i] >= 1
 						x = i % image_w
 						y = i / image_w
@@ -146,14 +147,16 @@ module Rescpos
 						k = image_h + l
 					end
 					p = 10 + k * (bitmap_w >> 3)
-					base_store_command[3] = p  & 0xff
-					base_store_command[4] = p >> 8 & 0xff
-					base_store_command[13] = bitmap_w & 0xff
-					base_store_command[14] = bitmap_w >> 8 & 0xff
-					base_store_command[15] = k & 0xff
-					base_store_command[16] = k >> 8 && 0xff
+					base_store_command[3] = (p  & 0xff).chr
+					base_store_command[4] = (p >> 8 & 0xff).chr
+					base_store_command[13] = (bitmap_w & 0xff).chr
+					base_store_command[14] = (bitmap_w >> 8 & 0xff).chr
+					base_store_command[15] = (k & 0xff).chr
+					base_store_command[16] = (k >> 8 && 0xff).chr
 					commands << base_store_command
-					commands << bitmap[(l * (bitmap_w >> 3))..(k * (bitmap_w >> 3))]
+					(l * (bitmap_w >> 3)).upto(k * (bitmap_w >> 3)) do |pos|
+						commands << bitmap[pos].chr
+					end
 					commands << print_command
 				end
 			end
