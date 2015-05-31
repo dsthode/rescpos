@@ -1,3 +1,5 @@
+require 'rmagick'
+
 module Rescpos
   module ReportUtil
     FONT_NORMAL = "\x00"
@@ -6,15 +8,15 @@ module Rescpos
     ALIGN_L = "\x00"
     ALIGN_R = "\x02"
 
-		UPCA = 65
-		UPCE = 66
-		EAN13 = 67
-		EAN8 = 68
-		CODE39 = 69
-		ITF = 70
-		CODABAR = 71
-		CODE93 = 72
-		CODE128 = 73
+		BARCODE_UPCA = 65
+		BARCODE_UPCE = 66
+		BARCODE_EAN13 = 67
+		BARCODE_EAN8 = 68
+		BARCODE_CODE39 = 69
+		BARCODE_ITF = 70
+		BARCODE_CODABAR = 71
+		BARCODE_CODE93 = 72
+		BARCODE_CODE128 = 73
 
     def single_splitline
       text("-" * 42, :font_size => FONT_NORMAL)
@@ -111,6 +113,53 @@ module Rescpos
 
 		def barcode(code, options)
 			"\n\x1d\x77\x02\x1d\x48\x02\x1d\x6b#{options[:type].chr}#{code.size.chr}#{code}"
+		end
+
+		def image(image_file)
+			base_store_command = "\x1d\x38\x4c" +
+				"\x0b\x00\x00\x00" +
+				"\x30\x70\x30" +
+				"\x01\x01\x31" +
+				"\x00\x00\x00\x00"
+			print_command = "\x1d\x28\x4c\x02\x00\x30\x32"
+			commands = ''
+			image = RMagick::Image::read(image_file).first
+			if image
+				if image.depth > 1
+					image = image.quantize(2)
+				end
+				image_w = image.columns
+				image_h = image.rows
+				image_bytes = image.export_pixels(0, 0, i.columns, i.rows, 'I')
+				chunk_size = 128
+				bitmap_w = ((image_w + 7) >> 3) << 3
+				bitmap_size = image_h * (bitmap_w >> 3)
+				bitmap = Array.new(bitmap_size)
+				for i in 0..image_bytes.size
+					if image_bytes[i] >= 1
+						x = i % image_w
+						y = i / image_w
+						bitmap[(y * bitmap_w + x) >> 3] |= 0x80 >> (x & 0x07)
+					end
+				end
+				k = chunk_size
+				0.step(image_h, k) do |l|
+					if k > image_h + l
+						k = image_h + l
+					end
+					p = 10 + k * (bitmap_w >> 3)
+					base_store_command[3] = p  & 0xff
+					base_store_command[4] = p >> 8 & 0xff
+					base_store_command[13] = bitmap_w & 0xff
+					base_store_command[14] = bitmap_w >> 8 & 0xff
+					base_store_command[15] = k & 0xff
+					base_store_command[16] = k >> 8 && 0xff
+					commands << base_store_command
+					commands << bitmap[(l * (bitmap_w >> 3))..(k * (bitmap_w >> 3))]
+					commands << print_command
+				end
+			end
+			commands
 		end
   end
 end
