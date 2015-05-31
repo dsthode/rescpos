@@ -121,7 +121,7 @@ module Rescpos
 				"\x00\x00\x00\x00"
 			print_command = "\x1d\x28\x4c\x02\x00\x30\x32"
 			commands = ''
-			image = ::RMagick::Image::read(image_file).first
+			image = ::Magick::Image::read(image_file).first
 			if image
 				if image.depth > 1
 					image = image.quantize(2)

@@ -1,5 +1,3 @@
-require 'rmagick'
-
 module Rescpos
   class Report
     include ERB::Util
