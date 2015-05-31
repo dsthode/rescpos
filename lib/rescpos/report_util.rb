@@ -128,7 +128,7 @@ module Rescpos
 				end
 				image_w = image.columns
 				image_h = image.rows
-				image_bytes = image.export_pixels(0, 0, i.columns, i.rows, 'I')
+				image_bytes = image.export_pixels(0, 0, image.columns, image.rows, 'I')
 				chunk_size = 128
 				bitmap_w = ((image_w + 7) >> 3) << 3
 				bitmap_size = image_h * (bitmap_w >> 3)
