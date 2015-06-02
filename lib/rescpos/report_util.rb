@@ -2,6 +2,8 @@ module Rescpos
 	module ReportUtil
 		FONT_NORMAL = "\x00"
 		FONT_BIG = "\x11"
+		WEIGHT_BOLD = "\x08"
+		WEIGHT_NORMAL = "\x00"
 		ALIGN_C = "\x01"
 		ALIGN_L = "\x00"
 		ALIGN_R = "\x02"
@@ -35,12 +37,17 @@ module Rescpos
 		def text(txt, options = {}) 
 			font_size = options[:font_size] || FONT_NORMAL
 			formatted_text = ''
+			formatted_text << weight(options[:weight]) if options[:weight]
 			formatted_text << fontsize(font_size)
 			formatted_text << grayscale(options[:gray]) if options[:gray]
 			formatted_text << align(options[:align_type]) if options[:align_type]
 			formatted_text << txt if txt
 		end
 		
+		def weight(bold)
+			"\x1b\x21" << bold.to_s
+		end
+
 		def fontsize(size)
 			"\x1d\x21" << size.to_s
 		end
