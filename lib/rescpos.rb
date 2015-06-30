@@ -8,7 +8,7 @@ require "rescpos/version"
 require "rescpos/printer"
 require "rescpos/table"
 require "rescpos/report_util"
-require "iconv"
+#require "iconv"
 require "rescpos/configuration"
 require "rescpos/report"
 

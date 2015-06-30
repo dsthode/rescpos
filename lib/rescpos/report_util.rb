@@ -30,7 +30,8 @@ module Rescpos
 		end
 
 		def chinese(chinese)
-			text = Iconv.iconv("GBK//IGNORE","UTF-8//IGNORE",chinese)
+			text = string.encode('GBK', 'UTF-8', :invalid => :replace, :undef => :replace, :replace => '')
+			#text = Iconv.iconv("GBK//IGNORE","UTF-8//IGNORE",chinese)
 			text[0]
 		end
 

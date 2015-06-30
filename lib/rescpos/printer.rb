@@ -17,7 +17,8 @@ module Rescpos
     end
 
     def print(content, opts = { :encoding => 'GBK', :cut_mode => :partial_cut })
-      content = Iconv.iconv("#{ opts[:encoding] || 'GBK' }//IGNORE","UTF-8//IGNORE", content)[0]
+			content = string.encode("#{opts[:encoding] || 'GBK'}", 'UTF-8', :invalid => :replace, :undef => :replace, :replace => '')
+      #content = Iconv.iconv("#{ opts[:encoding] || 'GBK' }//IGNORE","UTF-8//IGNORE", content)[0]
       @socket.send(content, SOCK_FLAG)
       send(opts[:cut_mode] || :partial_cut)
     end
