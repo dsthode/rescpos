@@ -121,52 +121,47 @@ module Rescpos
 		end
 
 		def image(image_file)
+			# GS 8 L function 112
 			base_store_command = "\x1d\x38\x4c" +
-				"\x0b\x00\x00\x00" +
-				"\x30\x70\x30" +
-				"\x01\x01\x31" +
+				# p1 p2 p3 p4
+				"\x00\x00\x00\x00" +
+				# m fn
+				"\x30\x70" +
+				# a bx by c
+				"\x30\x01\x01\x31" +
+				# xL xH yL yH
 				"\x00\x00\x00\x00"
+			# GS ( L function 50
 			print_command = "\x1d\x28\x4c\x02\x00\x30\x32"
 			commands = ''
 			image = ::Magick::Image::read(image_file).first
 			if image
+				if image.columns > 2047 || image.rows > 1662
+					image.resize_to_fit!(2047, 1662)
+				end
 				if image.depth > 1
 					image = image.quantize(2)
 				end
-				image_w = image.columns
-				image_h = image.rows
 				image_bytes = image.export_pixels(0, 0, image.columns, image.rows, 'I')
-				chunk_size = 128
-				bitmap_w = ((image_w + 7) >> 3) << 3
-				bitmap_size = image_h * (bitmap_w >> 3)
+				bitmap_w = (image.columns + 7) >> 3
+				bitmap_size = image.rows * bitmap_w 
 				bitmap = Array.new(bitmap_size)
-				for i in 0..(image_bytes.size-1)
-					bitmap[i] = 0
-					if image_bytes[i] >= 1
-						x = i % image_w
-						y = i / image_w
-						bitmap[(y * bitmap_w + x) >> 3] |= 0x80 >> (x & 0x07)
-					end
+				counter = 0
+				(0..image_bytes.size).step(8) do |d|
+					bitmap[counter] = Integer.parseInt("#{image_bytes[d+7]||0}#{image_bytes[d+6]||0}#{image_bytes[d+5]||0}#{image_bytes[d+4]||0}#{image_bytes[d+3]||0}#{image_bytes[d+2]||0}#{image_bytes[d+1]||0}#{image_bytes[d]||0}", 2)
+					counter += 1
 				end
-				k = chunk_size
-				0.step(image_h, k) do |l|
-					if k > image_h + l
-						k = image_h + l
-					end
-					p = 10 + k * (bitmap_w >> 3)
-					base_store_command[3] = (p	& 0xff).chr
-					base_store_command[4] = (p >> 8 & 0xff).chr
-					base_store_command[13] = (bitmap_w & 0xff).chr
-					base_store_command[14] = (bitmap_w >> 8 & 0xff).chr
-					base_store_command[15] = (k & 0xff).chr
-					base_store_command[16] = (k >> 8 && 0xff).chr
-					commands << base_store_command
-					(l * (bitmap_w >> 3)).upto(k * (bitmap_w >> 3)) do |pos|
-						commands << bitmap[pos].chr
-					end
-					commands << print_command
-					break
-				end
+				commands << base_store_command
+				commands << print_command
+				p = (bitmap_size + 9).to_s(16).rjust(8, '0')
+				commands[3] = p[-2..-1].to_i(16)
+				commands[4] = p[-4..-3].to_i(16)
+				commands[5] = p[-6..-5].to_i(16)
+				commands[6] = p[-8..-7].to_i(16)
+				commands[13] = image.columns.to_s(16).rjust(4, '0')[-2..-1].to_i(16)
+				commands[14] = image.columns.to_s(16).rjust(4, '0')[-4..-3].to_i(16)
+				commands[15] = image.rows.to_s(16).rjust(4, '0')[-2..-1].to_i(16)
+				commands[16] = image.rows.to_s(16).rjust(4, '0')[-4..-3].to_i(16)
 			end
 			commands
 		end
