@@ -122,42 +122,45 @@ module Rescpos
 
 		def image(image_file)
 			# GS v 
-			base_store_command = "\x1d\x76\x30\x00" +
+			base_store_command = "\x1d\x76\x30\x00"
 			commands = ''
-			image = ::Magick::Image::read(image_file).first
-			if image
-				if image.columns > 2047 || image.rows > 1662
-					image.resize_to_fit!(2047, 1662)
-				end
-				if image.depth > 1
-					image = image.quantize(2)
-				end
-				width = image.columns >> 3
-				height = image.columns >> 3
-				image = image.extent(width*8, height*8)
-				image_bytes = image.export_pixels
-				bitmap = []
-				counter = 0
-				temp = 0
-				mask = 0x80
-				(width * height * 8 * 3 * 8).times do |b|
-					next unless (b % 3).zero?
-					temp |= mask if image_bytes[b] == 0
-					mask = mask >> 1
-					counter += 3
-					if counter == 24
-						bitmap << temp
-						mask = 0x80
-						counter = 0
-						temp = 0
+			if !image_file.nil? && File.exists?(image_file) 
+				image = ::Magick::Image::read(image_file).first
+				if image
+					if image.columns > 2047 || image.rows > 1662
+						image.resize_to_fit!(2047, 1662)
 					end
+					if image.depth > 1
+						image = image.quantize(2)
+					end
+					width = image.columns >> 3
+					height = image.columns >> 3
+					image = image.extent(width*8, height*8)
+					image_bytes = image.export_pixels
+					bitmap = []
+					counter = 0
+					temp = 0
+					mask = 0x80
+					(width * height * 8 * 3 * 8).times do |b|
+						next unless (b % 3).zero?
+						temp |= mask if image_bytes[b] == 0
+						mask = mask >> 1
+						counter += 3
+						if counter == 24
+							bitmap << temp
+							mask = 0x80
+							counter = 0
+							temp = 0
+						end
+					end
+					commands << base_store_command
+					commands << [width, height*8].pack('SS')
+					commands << bitmap.pack('C*')
 				end
-				commands << base_store_command
-				commands << [width, height*8].pack('SS')
-				commands << bitmap.pack('C*')
 			end
 			commands.force_encoding('UTF-8')
 		end
+
 		def image2(image_file)
 			# GS 8 L function 112
 			base_store_command = "\x1d\x38\x4c" +
